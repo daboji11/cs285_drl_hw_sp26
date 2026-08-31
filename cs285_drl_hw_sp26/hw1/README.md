@@ -1,4 +1,4 @@
-## HW1 Imitation Learning
+## HW1 Imitation Learning （done）
 
 ### MSE Policy
 - Action chunking with MLP
