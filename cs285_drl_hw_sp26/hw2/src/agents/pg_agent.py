@@ -64,7 +64,7 @@ class PGAgent(nn.Module):
         # step 1: calculate Q values of each (s_t, a_t) point, using rewards (r_0, ..., r_t, ..., r_T)
         q_values: Sequence[np.ndarray] = self._calculate_q_vals(rewards)
 
-        # TODO: flatten the lists of arrays into single arrays, so that the rest of the code can be written in a vectorized
+        # TODO_DONE: flatten the lists of arrays into single arrays, so that the rest of the code can be written in a vectorized
         # way. obs, actions, rewards, terminals, and q_values should all be arrays with a leading dimension of `batch_size`
         # beyond this point.
         obs = np.concatenate(obs)
@@ -79,15 +79,16 @@ class PGAgent(nn.Module):
         )
 
         # step 3: use all datapoints (s_t, a_t, adv_t) to update the PG actor/policy
-        # TODO: update the PG actor/policy network once using the advantages
+        # TODO_DONE: update the PG actor/policy network once using the advantages
         info = self.actor.update(obs=obs, actions=actions, advantages=advantages)
 
 
         # step 4: if needed, use all datapoints (s_t, a_t, q_t) to update the PG critic/baseline
         if self.critic is not None:
-            # TODO: perform `self.baseline_gradient_steps` updates to the critic/baseline network
-            critic_info = None
-
+            # TODO_DONE: perform `self.baseline_gradient_steps` updates to the critic/baseline network
+            critic_info = {}
+            for _ in range(self.baseline_gradient_steps):
+                critic_info = self.critic.update(obs, q_values)
             info.update(critic_info)
 
         return info
@@ -151,16 +152,18 @@ class PGAgent(nn.Module):
         Operates on flat 1D NumPy arrays.
         """
         if self.critic is None:
-            # TODO: if no baseline, then what are the advantages?
+            # TODO_DONE: if no baseline, then what are the advantages?
             advantages = q_values
         else:
-            # TODO: run the critic and use it as a baseline
-            values = None
+            # TODO_DONE: run the critic and use it as a baseline
+            obs = ptu.from_numpy(obs)
+            values = ptu.to_numpy(self.critic.forward(obs).squeeze(-1))
             assert values.shape == q_values.shape
 
             if self.gae_lambda is None:
-                # TODO: if using a baseline, but not GAE, what are the advantages?
-                advantages = None
+                # TODO_DONE: if using a baseline, but not GAE, what are the advantages?
+
+                advantages = q_values - values
             else:
                 # TODO: implement GAE
                 batch_size = obs.shape[0]
@@ -178,7 +181,7 @@ class PGAgent(nn.Module):
                 # remove dummy advantage
                 advantages = advantages[:-1]
 
-        # TODO: normalize the advantages to have a mean of zero and a standard deviation of one within the batch
+        # TODO_DONE: normalize the advantages to have a mean of zero and a standard deviation of one within the batch
         if self.normalize_advantages:
             mean = np.mean(advantages)
             std = np.std(advantages)
