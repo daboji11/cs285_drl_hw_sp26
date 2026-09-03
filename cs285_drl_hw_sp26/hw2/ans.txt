@@ -1,0 +1,30 @@
+Which value estimator has better performance without advantage normalization: the trajectorycentric one, or the one using reward-to-go?
+reward-to-go is better. It learns faster and is more stable.
+
+Between the two value estimators, why do you think one is generally preferred over the other?
+Rtg is generally better since the current action will not change the the rewards received before the current time step, which means that rtg ignore all the past time step will lead to less variance.
+
+Did advantage normalization help？
+Advantage normalization helped in some settings. It clearly improved the vanilla estimator, which reached high returns much faster and remained more stable. However, the improvement was less clear when combined with reward-to-go, since the rtg + na run still showed substantial fluctuations.
+
+
+Did the batch size make an impact?
+Larger batches generally gave lower-variance, more stable updates, but required more environment samples per policy update and therefore did not necessarily improve sample efficiency.
+
+
+uv run src/scripts/run.py --env_name CartPole-v0 -n 100 -b 1000 \
+--exp_name cartpole
+uv run src/scripts/run.py --env_name CartPole-v0 -n 100 -b 1000 \
+-rtg --exp_name cartpole_rtg
+uv run src/scripts/run.py --env_name CartPole-v0 -n 100 -b 1000 \
+-na --exp_name cartpole_na
+uv run src/scripts/run.py --env_name CartPole-v0 -n 100 -b 1000 \
+-rtg -na --exp_name cartpole_rtg_na
+uv run src/scripts/run.py --env_name CartPole-v0 -n 100 -b 4000 \
+--exp_name cartpole_lb
+uv run src/scripts/run.py --env_name CartPole-v0 -n 100 -b 4000 \
+-rtg --exp_name cartpole_lb_rtg
+uv run src/scripts/run.py --env_name CartPole-v0 -n 100 -b 4000 \
+-na --exp_name cartpole_lb_na
+uv run src/scripts/run.py --env_name CartPole-v0 -n 100 -b 4000 \
+-rtg -na --exp_name cartpole_lb_rtg_na·

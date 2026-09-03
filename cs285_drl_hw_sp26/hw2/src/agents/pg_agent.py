@@ -113,7 +113,7 @@ class PGAgent(nn.Module):
         in each index t is sum_{t'=t}^T gamma^(t'-t) * r_{t'}.
         """
         length = len(rewards)
-        ans =  length * [None]
+        ans = length * [None]
         for t in range(length):
             return_sum = 0
             for tp in range(t, length):
@@ -182,6 +182,7 @@ class PGAgent(nn.Module):
         if self.normalize_advantages:
             mean = np.mean(advantages)
             std = np.std(advantages)
+            # normalization: (A - mu) / (std + epsilon), epsilon = 10**-8
             advantages = (advantages - mean) / (std + 10**(-8))
 
         return advantages
