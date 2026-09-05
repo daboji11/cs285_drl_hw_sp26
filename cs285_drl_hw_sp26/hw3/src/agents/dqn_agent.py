@@ -140,6 +140,7 @@ class DQNAgent(nn.Module):
         critic_stats = self.update_critic(obs=obs, action=action, reward=reward, next_obs=next_obs, done=done)
         if step % self.target_update_period == 0:
             self.update_target_critic()
+
         
         # Hint: if step % self.target_update_period == 0: ...
         # ENDTODO
