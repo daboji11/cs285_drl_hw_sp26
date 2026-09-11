@@ -182,7 +182,7 @@ def build_algo(cfg: TrainConfig):
 
 
 def compute_group_advantages(rewards: torch.Tensor, group_size: int, eps: float = 1e-6) -> torch.Tensor:
-    # TODO(student): implement group-relative advantage normalization.
+    # TODO_DONE(student): implement group-relative advantage normalization.
     # rewards is a flat vector of length N = batch_size * group_size in prompt-major
     # order, so the group_size sampled completions for the same prompt are contiguous.
     #
@@ -202,16 +202,30 @@ def compute_group_advantages(rewards: torch.Tensor, group_size: int, eps: float 
     #   of your choice for that group
     #
     # Return a flat tensor with the same shape/order as rewards.
-    raise NotImplementedError("student TODO: compute_group_advantages")
+    rewards = rewards.reshape(-1, group_size)
+
+    group_mean = rewards.mean(dim=-1, keepdim=True)
+    group_std = rewards.std(dim=-1, keepdim=True, unbiased=False)
+
+    advantages = (rewards - group_mean) / (group_std + eps)
+
+    return advantages.reshape(-1)
 
 
 def maybe_normalize_advantages(advantages: torch.Tensor, enabled: bool, eps: float = 1e-6) -> torch.Tensor:
-    # TODO(student): if enabled, z-score normalize the full advantage vector:
+    # TODO_DONE(student): if enabled, z-score normalize the full advantage vector:
     #   A' = (A - mean(A)) / (std(A) + eps)
     # Again use the population standard deviation (unbiased=False).
     # Otherwise return A unchanged.
     # Keep the output shape identical to the input shape.
-    raise NotImplementedError("student TODO: maybe_normalize_advantages")
+    if enabled:
+        A_mean = advantages.mean()
+        A_std = advantages.std(unbiased=False)
+        return (advantages - A_mean) / (A_std + eps)
+    else:
+        return advantages
+
+
 
 
 def maybe_update_warmup_lr(optimizer: torch.optim.Optimizer, base_lr: float, step: int, warmup_steps: int) -> None:
